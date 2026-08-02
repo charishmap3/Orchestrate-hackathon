@@ -1,147 +1,232 @@
 # Orchestrate: Intelligent Message Routing for High-Noise Messaging Streams
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Status](https://img.shields.io/badge/Status-Verified-success)
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![AI](https://img.shields.io/badge/AI-Gemini-orange)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## Overview
+---
 
-Orchestrate is a hybrid rule-and-AI routing system designed for the HackerRank Orchestrate challenge. The project processes messaging data and decides whether each incoming message should be treated as a high-priority notification, a lower-priority digest, or a muted item.
+# Overview
 
-The system is built to handle the real-world noise of modern messaging environments, including direct messages, business conversations, group chats, promotions, scams, image posts, and voice notes. Instead of treating every message equally, it triages content using context, behavior history, and multimodal signals.
+Orchestrate is a Hybrid AI Message Routing System developed for the HackerRank Orchestrate Hackathon.
 
-## Key Features
+The system intelligently classifies incoming messages into:
 
-- Intelligent message routing across three actions: Notify, Digest, and Mute
-- Rule-based reasoning for fast, deterministic decisions
-- Gemini AI fallback for ambiguous or multimodal cases
-- Context-aware routing using message text, conversation type, and user metadata
-- Historical message retrieval for evidence-based classification
-- Business verification-aware routing
-- User behavior analysis based on engagement and notification history
-- Image support for multimodal routing
-- Voice note support for multimodal routing
-- Confidence scoring for each routing decision
-- Output generation to CSV in the required schema
-- Evaluation metrics for action accuracy, message-type accuracy, precision, recall, F1, and confusion matrix
+- 🔔 Notify
+- 📰 Digest
+- 🔕 Mute
 
-## Architecture
+Instead of treating every notification equally, the system analyzes message content, sender trust, historical interactions, user preferences, business verification, group metadata, and multimodal inputs to determine the most appropriate action.
 
-```text
+The architecture combines a fast Rule-Based Reasoner with Gemini AI fallback, allowing accurate routing while minimizing unnecessary LLM calls.
+
+---
+
+# Features
+
+- Hybrid Rule Engine + Gemini AI Routing
+- Intelligent Notification Prioritization
+- Business Verification Detection
+- Sender Trust Scoring
+- Historical Message Retrieval
+- User Engagement Analysis
+- Notification Dismissal History
+- Group Metadata Analysis
+- Forwarded Message Detection
+- Spam & Scam Detection
+- Dynamic Confidence Scoring
+- Image Message Support
+- Voice Note Support
+- Automatic Rule-Based Fallback when Gemini quota is exceeded
+- CSV Output Generation
+- Automatic Evaluation Metrics
+
+---
+
+# System Architecture
+
+```
 Dataset
-↓
+      │
+      ▼
 Dataset Loader
-↓
+      │
+      ▼
 Context Builder
-↓
+      │
+      ▼
 Historical Retrieval
-↓
+      │
+      ▼
 Media Processor
-↓
+      │
+      ▼
 Rule-Based Reasoner
-↓
-Gemini AI Fallback
-↓
+      │
+      ▼
+Gemini AI (Low Confidence / Image / Voice)
+      │
+      ▼
 Routing Decision
-↓
+      │
+      ▼
 Output Writer
-↓
+      │
+      ▼
 Evaluation
 ```
 
-## Project Structure
+---
 
-```text
-.
-├── AGENTS.md                    # Guidance for coding agents and transcript logging
-├── CLAUDE.md                    # Additional local workflow notes
-├── code/
-│   ├── agents/                  # Routing, retrieval, reasoning, and media logic
-│   ├── evaluation/              # Metrics and evaluation utilities
-│   ├── models/                  # Dataclasses and shared schemas
-│   ├── prompts/                 # Prompt assets used by the reasoning flow
-│   ├── services/                # External service integrations
-│   ├── utils/                   # Helper utilities
-│   └── main.py                  # End-to-end pipeline entry point
-├── dataset/
-│   ├── messages.csv             # Incoming messages to route
-│   ├── sample_messages.csv      # Labeled sample messages used for evaluation
-│   ├── users.csv                # User metadata and engagement signals
-│   ├── groups.csv               # Group metadata
-│   ├── group_members.csv        # Group membership and mute/admin flags
-│   ├── business_accounts.csv    # Business sender metadata and verification status
+# Project Structure
+
+```
+Orchestrate-hackathon
+│
+├── code
+│   ├── agents
+│   ├── evaluation
+│   ├── models
+│   ├── prompts
+│   ├── services
+│   ├── utils
+│   ├── requirements.txt
+│   └── main.py
+│
+├── dataset
+│   ├── messages.csv
+│   ├── message_history.csv
+│   ├── message_events.csv
+│   ├── users.csv
+│   ├── groups.csv
+│   ├── group_members.csv
+│   ├── business_accounts.csv
 │   ├── user_business_history.csv
-│   ├── message_history.csv      # Historical messages used as evidence
-│   ├── message_events.csv       # Message interaction events
-│   ├── images.csv               # Image metadata and file paths
-│   ├── voice_notes.csv          # Voice note metadata and file paths
-│   ├── daily_notification_summary.csv
-│   └── media/                   # Media assets used by the pipeline
-├── tests/                       # Regression tests for reasoning behavior
-└── README.md                    # Project documentation
+│   ├── images.csv
+│   ├── voice_notes.csv
+│   ├── output.csv
+│   └── media
+│
+├── tests
+│   └── test_reasoner.py
+│
+├── README.md
+├── AGENTS.md
+├── CLAUDE.md
+└── .gitignore
 ```
 
-## Tech Stack
+---
 
-- Python
-- Pandas
-- Google Gemini API
-- CSV-based dataset processing
-- Logging and structured runtime reporting
-- Rule-based AI reasoning
-- Hybrid AI routing
+# Routing Workflow
 
-## Workflow
+1. Load all datasets.
+2. Build routing context.
+3. Retrieve historical evidence.
+4. Process image or voice media (if available).
+5. Apply Rule-Based Reasoner.
+6. Calculate confidence score.
+7. Invoke Gemini only when required.
+8. Generate final routing decision.
+9. Export predictions to CSV.
+10. Evaluate predictions.
 
-A message moves through the pipeline in the following order:
+---
 
-1. The dataset loader reads the CSV files from the dataset directory.
-2. The context builder assembles the relevant user, group, business, and message metadata.
-3. Historical evidence is retrieved from prior messages and related events.
-4. The media processor resolves image or voice note paths when present.
-5. The rule-based reasoner produces an initial routing decision.
-6. The routing engine may invoke Gemini for low-confidence, ambiguous, or multimodal cases.
-7. The output writer normalizes and saves the final action, message type, reason, confidence, and evidence IDs to CSV.
-8. The evaluator compares predictions against the sample labels and prints accuracy and confusion metrics.
+# Routing Actions
 
-## Routing Logic
+| Action | Description |
+|---------|-------------|
+| Notify | Urgent or important messages |
+| Digest | Informational messages for later review |
+| Mute | Spam, promotions, advertisements, scams |
 
-The routing engine can produce three actions:
+---
 
-| Action | Purpose |
-|---|---|
-| Notify | Use when the message appears urgent, transactional, personal, or otherwise important |
-| Digest | Use when the message is informational or should be batched for later review |
-| Mute | Use for spam, scam-like, or clearly unwanted messages |
+# Message Types Supported
 
-The decision is shaped by the following signals:
+- Banking
+- Payment Reminder
+- OTP
+- Delivery Update
+- Calendar Reminder
+- Meeting
+- Education
+- Family
+- Friends
+- Government
+- Emergency
+- Promotion
+- Newsletter
+- Advertisement
+- Spam
+- Scam
 
-- Business verification: verified businesses receive different treatment than unverified ones.
-- Forward count: repeated or forwarded content can indicate spam-like behavior or promotion cascades.
-- Historical evidence: prior messages and interactions provide context for repetition and intent.
-- User engagement: user behavior and notification history influence how aggressively a message should be surfaced.
-- DND-style signals: muted group conditions and other notification settings affect the routing decision.
-- Group metadata: group type and membership flags influence whether a message should be treated as personal, promotional, or urgent.
-- Media analysis: image and voice content can add urgency, payment, scam, or event cues.
-- Confidence score: the rule engine assigns a confidence score, and Gemini is engaged when confidence is low or the case is ambiguous.
-- Gemini fallback: if Gemini is unavailable or quota-limited, the system automatically returns to the rule engine.
+---
 
-## Hybrid AI Design
+# Hybrid AI Design
 
-The system uses a hybrid design:
+The project follows a hybrid reasoning approach.
 
-- The Rule Engine handles the majority of messages and provides a strong baseline.
-- Gemini is used selectively for:
-  - low-confidence decisions
-  - image-based cases
-  - voice-based cases
-  - ambiguous or conflicting signals
+### Rule-Based Reasoner
 
-If Gemini is unavailable, the pipeline continues without interruption and falls back to the rule-based reasoner.
+Uses:
 
-## Evaluation
+- Business Verification
+- Sender Trust
+- Domain Matching
+- Historical Evidence
+- User Engagement
+- Notification Dismiss History
+- Group Metadata
+- Forward Count
+- User-Business History
+- DND Signals
 
-Evaluation is performed after the main run. The evaluator loads the generated output and compares it with the labeled sample messages.
+to generate:
 
-The project reports:
+- Action
+- Message Type
+- Confidence
+- Human-readable Reason
+
+---
+
+### Gemini AI
+
+Gemini is invoked only when:
+
+- Confidence is low
+- Image messages are detected
+- Voice notes are detected
+- Conflicting routing signals exist
+
+If Gemini is unavailable or quota is exceeded, the system automatically falls back to the Rule-Based Reasoner.
+
+---
+
+# Confidence Scoring
+
+Confidence is dynamically computed using weighted signals such as:
+
+- Sender Trust
+- Historical Evidence
+- Business Verification
+- User Engagement
+- Forward Count
+- Spam Indicators
+- Urgency
+- Group Context
+- Media Analysis
+
+The score ranges from **0.0 to 1.0**.
+
+---
+
+# Evaluation Metrics
+
+The evaluator reports:
 
 - Action Accuracy
 - Message Type Accuracy
@@ -151,57 +236,83 @@ The project reports:
 - F1 Score
 - Confusion Matrix
 
-These metrics are printed at the end of the run and help assess how well the routing logic performs on the provided sample set.
+Current verified results:
 
-## Output
+| Metric | Score |
+|---------|-------|
+| Action Accuracy | **0.667** |
+| Message Accuracy | **0.567** |
 
-The pipeline writes a CSV file named `dataset/output.csv` with these fields:
+---
 
-| Column | Description |
-|---|---|
-| `message_id` | Identifier for the message |
-| `action` | One of `notify`, `digest`, or `mute` |
-| `message_type` | The predicted message category |
-| `reason` | Short human-readable rationale |
-| `confidence` | A numeric score from `0.0` to `1.0` |
-| `evidence_message_ids` | Related historical message IDs or `none` |
+# Tech Stack
 
-## Installation
+- Python 3.10+
+- Pandas
+- Google Gemini API
+- CSV Processing
+- Rule-Based AI
+- Logging
+
+---
+
+# Installation
+
+Clone the repository.
 
 ```bash
-git clone https://github.com/your-org/hackerrank-orchestrate-august26-main.git
-cd hackerrank-orchestrate-august26-main
+git clone https://github.com/charishmap3/Orchestrate-hackathon.git
+cd Orchestrate-hackathon
+```
 
-python -m venv .venv
-source .venv/bin/activate
-# On Windows PowerShell: .venv\Scripts\Activate.ps1
+Install dependencies.
 
+```bash
 pip install -r code/requirements.txt
 ```
 
-Create a `.env` file in the project root and add your Gemini key if you want to enable the AI fallback path:
+Create a `.env` file.
 
-```env
-GEMINI_API_KEY=your_key_here
+```
+GEMINI_API_KEY=YOUR_API_KEY
 ```
 
-Run the full pipeline:
+Run the project.
 
 ```bash
 python code/main.py
 ```
 
-The script writes the results to `dataset/output.csv` and prints a summary of routing behavior and evaluation metrics.
+---
 
-## Sample Console Output
+# Output
 
-The following is an example of the kind of output produced by the verified run:
+The generated predictions are saved as:
 
-```text
+```
+dataset/output.csv
+```
+
+The output contains:
+
+- Message ID
+- Action
+- Message Type
+- Reason
+- Confidence
+- Evidence Message IDs
+
+---
+
+# Sample Console Output
+
+```
 ==================================================
 ORCHESTRATE EXECUTION SUMMARY
 ==================================================
+
 Messages Processed : 110
+
 Notify             : 63
 Digest             : 17
 Mute               : 30
@@ -215,37 +326,34 @@ Gemini Decisions   : 1
 Action Accuracy    : 0.667
 Message Accuracy   : 0.567
 
-Output File        : .../dataset/output.csv
+Output File        : dataset/output.csv
+
 ==================================================
 ```
 
-## Future Improvements
+---
 
-Potential next steps for the project include:
+# Future Improvements
 
-- Better multimodal understanding for images and voice content
-- LLM fine-tuning for domain-specific routing behavior
-- Retrieval-augmented generation for richer historical reasoning
-- Learning from user feedback to improve decision quality over time
-- Multi-agent orchestration for specialized routing tasks
-- Real-time deployment for live messaging environments
+- Upgrade to the latest Google GenAI SDK
+- Improve multimodal reasoning
+- Real-time notification routing
+- Reinforcement learning from user feedback
+- Multi-agent orchestration
+- Web dashboard for monitoring
 
-## Screenshots
+---
 
-Placeholder screenshots for the project showcase:
+# Author
 
-- Architecture pipeline diagram
-- Sample routing output from `dataset/output.csv`
-- Evaluation metrics summary
-- Example of a multimodal message being routed
+**Charishma P**
 
-## License
+AI & Machine Learning Engineering Student
+
+Hackathon Project – Intelligent Message Routing using Hybrid AI
+
+---
+
+# License
 
 This project is licensed under the MIT License.
-
-## Contributors
-
-Add contributor names here:
-
-- [Your Name]
-- [Your Team]
